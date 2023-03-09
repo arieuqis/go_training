@@ -1,4 +1,4 @@
-package consumer
+package main
 
 import (
 	"database/sql"
@@ -9,6 +9,9 @@ import (
 	"github.com/arieuqis/go_training/internal/usecase"
 	"github.com/arieuqis/go_training/pkg/kafka"
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
+
+	//sqlite3 driver
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -26,11 +29,13 @@ func main() {
 
 	topics := []string{"orders"}
 	servers := "host.docker.internal:9094"
+	fmt.Println("Kafka consumer has been started")
 	go kafka.Consume(topics, servers, msgChanKafka)
 	kafkaWorker(msgChanKafka, usecase)
 }
 
 func kafkaWorker(msgChanKafka chan *ckafka.Message, uc usecase.CalculateFinalPrice) {
+	fmt.Println("Kafka worker has started")
 	for msg := range msgChanKafka {
 		var OrderInputDTO usecase.OrderInputDTO
 		err := json.Unmarshal(msg.Value, &OrderInputDTO)
